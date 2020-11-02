@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # ---
 # jupyter:
 #   jupytext:
@@ -14,12 +15,21 @@
 # ---
 
 # %% [markdown]
+# # Lucas-pricing of Markov trees
+#
+# ## A notebook by [Mateo Velásquez-Giraldo](https://mv77.github.io/)
+#
+# This notebooks presents simple computational tools to solve Lucas' asset-pricing model when the asset's dividend process follows a Markov process of order one.
+#
+# A presentation of this model can be found in [Christopher D. Carroll's lecture notes](http://www.econ2.jhu.edu/people/ccarroll/public/lecturenotes/AssetPricing/LucasAssetPrice/).
+#
 # \begin{equation*}
-# P_t = E_{t}\left[ \frac{u(d_{t+1})}{u(d_t)} (P_{t+1} + d_{t+1}) \right]
+# P_t(d_t) = E_{t}\left[ \frac{u(d_{t+1})}{u(d_t)} (P_{t+1}(d_{t+1}) + d_{t+1}) \right]
 # \end{equation*}
 
 # %% Preamble
 import numpy as np
+import matplotlib.pyplot as plt
 from HARK.utilities import CRRAutilityP
 
 # %% Definitions
@@ -88,8 +98,8 @@ class LucasEconomy:
                 print('Iter:' + str(it) + '   P = '+ np.array2string(np.transpose(P_0)))
         
         self.EqPrice = P_0
-    
-        
+
+
 # %% Example
 
 # Create a Markov process for dividends. A basic high-mid-low with 
@@ -109,3 +119,23 @@ p0 = np.array([[1],[2],[3]])
 # 
 print(economy.priceOnePeriod(p0))
 economy.solve(disp = True)
+
+# %% [markdown]
+# # Prices and risk-aversion
+
+# %%
+# Create two economies
+Disc = 0.9
+LowCrraEcon  = LucasEconomy(CRRA = 2, DiscFac = Disc, DivDist = DivDist)
+HighCrraEcon = LucasEconomy(CRRA = 4, DiscFac = Disc, DivDist = DivDist)
+
+# Solve both
+LowCrraEcon.solve()
+HighCrraEcon.solve()
+
+# Plot the pricing functions for both
+plt.plot(DivDist.Values, LowCrraEcon.EqPrice, label = 'Low CRRA')
+plt.plot(DivDist.Values, HighCrraEcon.EqPrice, label = 'High CRRA')
+plt.legend()
+plt.xlabel('$d_t$')
+plt.ylabel('$P_t$')
